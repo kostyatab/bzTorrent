@@ -1,19 +1,29 @@
-﻿namespace Demo
-{
-    using System;
-    using System.Net.Torrent;
-    using System.Net.Torrent.Data;
-    using System.Net.Torrent.IO;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
+﻿using System;
+using System.Net.Torrent;
+using System.Net.Torrent.Data;
+using System.Net.Torrent.IO;
+using System.Net.Torrent.ProtocolExtensions;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
+namespace Demo
+{
     class Program
     {
         static void Main(string[] args)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
+            
+            var dht = new DHTNode("12345678900987654321");
+            dht.Connect("router.bittorrent.com", 6881);
+            //dht.Ping();
+            dht.GetPeers("e4be9e4db876e3e3179778b03e906297be5c8dbe", (ips) =>
+            {
+                var i = ips;
+            });
+            
+            /*
             DecodeTorrentToMeta();
 
             TestMagnetLink();
@@ -32,6 +42,7 @@
             ScrapeTorrent();
 
             TestPeerWireClient();
+            */
         }
 
         static void DecodeTorrentToMeta()
@@ -101,6 +112,9 @@
 
             //create a client with that socket
             var client = new PeerWireClient(socket);
+            var portExt = new DHTPortExtension();
+
+            client.RegisterBTExtension(portExt);
 
             //connect to the remote host
             client.Connect("127.0.0.1", 63516);

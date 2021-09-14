@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
-using System.Net.Torrent.BEncode;
+using bzBencode;
 using System.Net.Torrent.Helpers;
 using System.Text;
 
@@ -72,7 +72,7 @@ namespace System.Net.Torrent
             var recvDict = (BDict)BencodingUtils.Decode(fullBuffer);
         }
 
-        public void GetPeers(string hash)
+        public void GetPeers(string hash, Action<IPEndPoint[]> callback)
         {
             var tid = GenerateTID();
 
@@ -114,13 +114,17 @@ namespace System.Net.Torrent
             var nodesBStr = (BString)responseDict["nodes"];
             var nodesBytes = nodesBStr.ByteValue;
 
-            for (int i = 0; i < nodesBytes.Length / 6; i++)
+			var ipAddresses = new List<IPEndPoint>();
+            for (var i = 0; i < nodesBytes.Length / 6; i++)
             {
                 var ip = UnpackHelper.UInt32(nodesBytes, i * 6, UnpackHelper.Endianness.Little);
                 var port = UnpackHelper.UInt16(nodesBytes, (i * 6) + 4, UnpackHelper.Endianness.Big);
 
                 var ipAddr = new IPEndPoint(ip, port);
-            }
+				ipAddresses.Add(ipAddr);
+			}
+
+			callback?.Invoke(ipAddresses.ToArray());
         }
 
         private BDict CreateQuery(string tid, string type, BDict arguments)
