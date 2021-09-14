@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 using System.Linq;
-using System.Net.Torrent.BEncode;
+using bzBencode;
 using System.Net.Torrent.Helpers;
 using System.Net.Torrent.ProtocolExtensions;
 using System.Text;
@@ -45,11 +45,11 @@ namespace System.Net.Torrent.Extensions
         private ExtendedProtocolExtensions _parent;
 
         public string Protocol
-        {
-            get { return "ut_metadata"; }
-        }
+		{
+			get => "ut_metadata";
+		}
 
-        public event Action<IPeerWireClient, IBTExtension, BDict> MetaDataReceived;
+		public event Action<IPeerWireClient, IBTExtension, BDict> MetaDataReceived;
 
         public void Init(ExtendedProtocolExtensions parent)
         {
