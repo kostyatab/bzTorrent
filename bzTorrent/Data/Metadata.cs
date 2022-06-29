@@ -45,7 +45,7 @@ namespace bzTorrent.Data
     public class Metadata : IMetadata
     {
         private IBencodingType _root;
-        private ICollection<MetadataFileInfo> files;
+        private readonly ICollection<MetadataFileInfo> _files = new List<MetadataFileInfo>();
 
         public byte[] Hash { get; private set; }
 
@@ -59,7 +59,7 @@ namespace bzTorrent.Data
 
         public string Announce { get; private set; }
 
-        public ICollection<string> AnnounceList { get; private set; }
+        public ICollection<string> AnnounceList { get; } = new Collection<string>();
 
         public string CreatedBy { get; private set; }
 
@@ -69,36 +69,19 @@ namespace bzTorrent.Data
 
         public long PieceSize { get; private set; }
 
-        public ICollection<byte[]> PieceHashes { get; private set; }
-        public ICollection<MetadataPieceInfo> Pieces { get; private set; }
+        public ICollection<byte[]> PieceHashes { get; } = new Collection<byte[]>();
+        public ICollection<MetadataPieceInfo> Pieces { get; } = new Collection<MetadataPieceInfo>();
 
         public bool Private { get; private set; }
 
-        public Metadata()
-        {
-            Init();
-        }
-
         public Metadata(Stream stream)
         {
-            Init();
-
             Load(stream);
         }
 
         public Metadata(MagnetLink magnetLink)
         {
-            Init();
-
             Load(magnetLink);
-        }
-
-        private void Init()
-        {
-            AnnounceList = new Collection<string>();
-            PieceHashes = new Collection<byte[]>();
-            Pieces = new Collection<MetadataPieceInfo>();
-            files = new List<MetadataFileInfo>();
         }
 
         public bool Load(MagnetLink magnetLink)
@@ -233,16 +216,16 @@ namespace bzTorrent.Data
                         id++;
                         startByte += filesize;
 
-                        files.Add(fileInfo);
+                        _files.Add(fileInfo);
                     }
                 }
 
                 if (infoDict.ContainsKey("name"))
                 {
                     Name = (BString)infoDict["name"];
-                    if (files.Count == 0 && infoDict.ContainsKey("length"))
+                    if (_files.Count == 0 && infoDict.ContainsKey("length"))
                     {
-                        files.Add(new MetadataFileInfo
+                        _files.Add(new MetadataFileInfo
                         {
                             Id = 0,
                             FileSize = (BInt)infoDict["length"],
@@ -286,22 +269,22 @@ namespace bzTorrent.Data
 
         public IReadOnlyCollection<string> GetFiles()
         {
-            if (files.IsNullOrEmpty())
+            if (_files.IsNullOrEmpty())
             {
                 return new Collection<string>();
             }
 
-            return files?.OrderBy(f => f.Id).Select(x => x.Filename)?.ToList()?.AsReadOnly();
+            return _files?.OrderBy(f => f.Id).Select(x => x.Filename)?.ToList()?.AsReadOnly();
         }
 
         public IReadOnlyCollection<MetadataFileInfo> GetFileInfos()
         {
-            if (files.IsNullOrEmpty())
+            if (_files.IsNullOrEmpty())
             {
                 return new Collection<MetadataFileInfo>();
             }
 
-            return files?.OrderBy(f => f.Id).ToList()?.AsReadOnly();
+            return _files?.OrderBy(f => f.Id).ToList()?.AsReadOnly();
         }
 
         #region Static Helpers
